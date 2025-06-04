@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <title>쇼핑몰</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    .navbar {
+      background-color: black;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+    }
+
+    .nav-items {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .hamburger {
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .main-content {
+      height: calc(100vh - 60px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    .shop-images {
+      display: flex;
+      gap: 20px;
+    }
+
+    .shop-images img {
+      width: 250px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .shop-images img:hover {
+      transform: scale(1.05);
+    }
+
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      font-size: 20px;
+      animation: fall linear infinite;
+      z-index: 9999;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="navbar">
+  <div class="nav-items">
+    <div class="hamburger" onclick="handleHamburgerClick()">&#9776;</div>
+    <div id="nav-links">
+      <!-- Spring Security를 사용한 조건부 네비게이션 -->
+      <div sec:authorize="isAuthenticated()">
+        <a class="nav-link" th:href="@{/logout}">로그아웃</a>
+        <a class="nav-link" th:href="@{/upload}">사진 업로드</a>
+      </div>
+      <div sec:authorize="!isAuthenticated()">
+        <a class="nav-link" th:href="@{/login}">로그인</a>
+        <a class="nav-link" th:href="@{/signup}">회원가입</a>
+        <a class="nav-link" th:href="@{/upload}">사진 업로드</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main-content">
+  <div class="shop-images">
+    <a href="https://www.musinsa.com/main/musinsa/recommend?gf=A">
+      <img th:src="@{/images/musinsa.jpg}" alt="무신사" />
+    </a>
+    <a href="https://www.nike.com/kr/">
+      <img th:src="@{/images/nike.jpg}" alt="나이키" />
+    </a>
+  </div>
+</div>
+
+<script>
+  // Spring Security 사용으로 인해 로그인 상태 관리 코드 제거
+  // 햄버거 메뉴 클릭 핸들러
+  function handleHamburgerClick() {
+    // Spring Security를 통해 인증 상태 확인
+    const isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
+
+    if (!isAuthenticated) {
+      window.location.href = '/';  // 메인 페이지로 이동
+    }
+    // 로그인되어 있으면 아무 동작 안함
+  }
+
+  // 눈송이 효과
+  const colors = ["#FFB6C1", "#FF69B4", "#87CEEB", "#8A2BE2", "#7FFFD4", "#FFD700", "#FFA07A"];
+  const symbols = ["❄", "♥", "✿", "★"];
+
+  function createSnowflake() {
+    const snowflake = document.createElement("div");
+    snowflake.classList.add("snowflake");
+    snowflake.style.left = Math.random() * window.innerWidth + "px";
+    snowflake.style.animationDuration = (3 + Math.random() * 5) + "s";
+    snowflake.style.color = colors[Math.floor(Math.random() * colors.length)];
+    snowflake.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+    document.body.appendChild(snowflake);
+
+    setTimeout(() => {
+      snowflake.remove();
+    }, 8000);
+  }
+
+  setInterval(createSnowflake, 300);
+</script>
+</body>
+</html>

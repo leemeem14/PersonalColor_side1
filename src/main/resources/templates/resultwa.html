@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>wa 결과 페이지</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    .navbar {
+      background-color: black;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+    }
+
+    .nav-items {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .hamburger {
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .nav-link:hover {
+      color: #ccc;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      /*background-color: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);*/
+    }
+
+    .top img {
+      width: 100%; /* 좌우로 꽉 차게 */
+      max-height: 50vh; /* 화면의 절반 높이를 넘지 않도록 제한 */
+      object-fit: cover; /* 이미지 비율 유지하며 영역 채우기 */
+      display: block; /* 이미지가 블록 요소로 동작하도록 설정 */
+      margin: 0 auto; /* 중앙 정렬 */
+    }
+
+    h1, p {
+      text-align: center;
+    }
+
+    /* 버튼 스타일 개선 */
+    div > button {
+      margin: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+      position: relative;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      min-width: 80px;
+    }
+    
+    /* 이전 버튼 스타일 */
+    .prev-btn {
+      background-color: rgb(255, 255, 255);
+      border: 2px solid black;
+      color: black;
+    }
+    
+    .prev-btn:hover {
+      background-color: black;
+      color: white;
+    }
+    
+    /* 다음 버튼 스타일 */
+    .next-btn {
+      background-color: black;
+      color: white;
+    }
+    
+    .next-btn:hover {
+      background-color: white;
+      border: 2px solid black;
+      color: black;
+    }
+    
+    /* 툴팁 스타일 */
+    button::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #555;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+    
+    button:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      font-size: 20px;
+      animation: fall linear infinite;
+      z-index: 9999;
+    }
+    
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="nav-items">
+      <div class="hamburger" onclick="window.location.href='index2.html'">&#9776;</div>
+      <div id="navMenu">
+        <!-- 로그인 상태에 따라 동적으로 변경됩니다 -->
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="top">
+      <img src="wa.png" alt="ws" referrerPolicy="no-referrer">
+    </div>
+    <h1>당신의 퍼스널 컬러는 Warm Autumn입니다.</h1>
+    <p>결과에 대한 설명1</p>
+    <p>결과에 대한 설명2(필요)</p>
+    <p>결과에 대한 설명3(하다면)</p>
+    <div>
+      <button class="prev-btn" onclick="window.location.href='upload.html'" data-tooltip="사진 업로드로 돌아가기">이전</button>
+      <button class="next-btn" onclick="window.location.href='shop.html'" data-tooltip="쇼핑 페이지로 이동">다음</button>
+    </div>
+  </div>
+
+  <script>
+    // 페이지 로드 시 네비게이션 메뉴 설정
+    window.onload = function() {
+      setupNavigation();
+    };
+
+    // 네비게이션 메뉴 설정
+    function setupNavigation() {
+  const navMenu = document.getElementById('navMenu');
+  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+  if (isLoggedIn) {
+    // 로그인된 상태: 이메일은 표시하지 않음
+    navMenu.innerHTML = `
+      <a class="nav-link" onclick="logout()">로그아웃</a>
+      <a class="nav-link" href="upload.html">사진 업로드</a>
+    `;
+  } else {
+    // 로그인되지 않은 상태
+    navMenu.innerHTML = `
+      <a class="nav-link" href="login.html">로그인</a>
+      <a class="nav-link" href="signup.html">회원가입</a>
+      <a class="nav-link" href="upload.html">사진 업로드</a>
+    `;
+  }
+}
+
+    // 로그아웃 함수
+    function logout() {
+      if (confirm('로그아웃 하시겠습니까?')) {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('userEmail');
+        alert('로그아웃되었습니다.');
+        
+        // 네비게이션 메뉴 다시 설정
+        setupNavigation();
+        
+        // 필요하다면 로그인 페이지로 리다이렉트
+        // window.location.href = 'login.html';
+      }
+    }
+
+    function showPopup(feature) {
+      alert(`${feature} 기능은 현재 개발 중입니다. 곧 만나보실 수 있습니다!`);
+    }
+
+    const colors = ["#FFB6C1", "#FF69B4", "#87CEEB", "#8A2BE2", "#7FFFD4", "#FFD700", "#FFA07A"];
+    const symbols = ["❄", "♥", "✿", "★"];
+    
+    function createSnowflake() {
+      const snowflake = document.createElement("div");
+      snowflake.classList.add("snowflake");
+      snowflake.style.left = Math.random() * window.innerWidth + "px";
+      snowflake.style.animationDuration = (3 + Math.random() * 5) + "s";
+      snowflake.style.color = colors[Math.floor(Math.random() * colors.length)];
+      snowflake.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+      document.body.appendChild(snowflake);
+      
+      setTimeout(() => {
+        snowflake.remove();
+      }, 8000);
+    }
+    
+    setInterval(createSnowflake, 300);
+  </script>
+</body>
+</html>

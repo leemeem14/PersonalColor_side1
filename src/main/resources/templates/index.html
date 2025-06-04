@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>메인 페이지</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    .navbar {
+      background-color: black;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+    }
+
+    .nav-items {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .hamburger {
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .nav-link.disabled {
+      color: #666;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .main-content {
+      height: calc(100vh - 60px); /* 네비게이션 높이 제외 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .main-content img {
+      width: 250px; /* 필요에 따라 조정 가능 */
+      border-radius: 20px;
+    }
+
+    /* 모달 스타일 */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 15% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+      text-align: center;
+    }
+
+    .modal-buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .modal-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .modal-btn.primary {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .modal-btn.secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      font-size: 20px;
+      animation: fall linear infinite;
+      z-index: 9999;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="navbar">
+  <div class="nav-items">
+    <div class="hamburger" onclick="window.location.href='/menu'">&#9776;</div>
+    <a class="nav-link" th:href="@{/login}" id="loginLink">로그인</a>
+    <a class="nav-link" th:href="@{/signup}">회원가입</a>
+    <a class="nav-link" href="#" id="uploadLink">사진 업로드</a>
+    <a class="nav-link" href="#" id="logoutLink" style="display: none;">로그아웃</a>
+  </div>
+</div>
+
+<div class="main-content">
+
+</div>
+
+<!-- 로그인 필요 모달 -->
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <h3>로그인이 필요합니다</h3>
+    <p>사진 업로드 기능을 사용하려면 먼저 로그인해주세요.</p>
+    <div class="modal-buttons">
+      <button class="modal-btn primary" onclick="goToLogin()">로그인하러 가기</button>
+      <button class="modal-btn secondary" onclick="closeModal()">취소</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 로그인 상태 확인 함수
+  function isLoggedIn() {
+    // sessionStorage 사용 (서버에서 세션 관리할 때 권장)
+    return sessionStorage.getItem('isLoggedIn') === 'true';
+  }
+
+  // 페이지 로드 시 UI 업데이트
+  function updateUI() {
+    const loginLink = document.getElementById('loginLink');
+    const signupLink = document.querySelector('a[href="/signup"]');
+    const uploadLink = document.getElementById('uploadLink');
+    const logoutLink = document.getElementById('logoutLink');
+
+    if (isLoggedIn()) {
+      // 로그인된 상태
+      loginLink.style.display = 'none';
+      logoutLink.style.display = 'block';
+      signupLink.style.display = 'none';
+      uploadLink.classList.remove('disabled');
+      uploadLink.onclick = function() {
+        window.location.href = '/upload';
+      };
+    } else {
+      // 로그인되지 않은 상태
+      loginLink.style.display = 'block';
+      signupLink.style.display = 'block';
+      logoutLink.style.display = 'none';
+      uploadLink.classList.add('disabled');
+      uploadLink.onclick = function(e) {
+        e.preventDefault();
+        showLoginModal();
+      };
+    }
+  }
+
+  // 로그인 모달 표시
+  function showLoginModal() {
+    document.getElementById('loginModal').style.display = 'block';
+  }
+
+  // 모달 닫기
+  function closeModal() {
+    document.getElementById('loginModal').style.display = 'none';
+  }
+
+  // 로그인 페이지로 이동
+  function goToLogin() {
+    window.location.href = '/login';
+  }
+
+  // 로그아웃 처리
+  function logout() {
+    // 서버에 로그아웃 요청을 보내는 것이 좋습니다
+    fetch('/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }).then(response => {
+      if (response.ok) {
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('username');
+        updateUI();
+        alert('로그아웃되었습니다.');
+      }
+    });
+  }
+
+  // 로그아웃 링크 클릭 이벤트
+  document.getElementById('logoutLink').onclick = logout;
+
+  // 모달 바깥 클릭 시 닫기
+  window.onclick = function(event) {
+    const modal = document.getElementById('loginModal');
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+
+  // 페이지 로드 시 UI 업데이트
+  window.onload = updateUI;
+
+  // 테스트용: 로그인 상태 토글 (실제 사용 시 제거)
+  function testLogin() {
+    sessionStorage.setItem('isLoggedIn', 'true');
+    sessionStorage.setItem('username', 'testuser');
+    updateUI();
+    console.log('테스트 로그인 완료');
+  }
+
+  function testLogout() {
+    sessionStorage.removeItem('isLoggedIn');
+    sessionStorage.removeItem('username');
+    updateUI();
+    console.log('테스트 로그아웃 완료');
+  }
+
+  const colors = ["#FFB6C1", "#FF69B4", "#87CEEB", "#8A2BE2", "#7FFFD4", "#FFD700", "#FFA07A"];
+  const symbols = ["❄", "♥", "✿", "★"];
+
+  function createSnowflake() {
+    const snowflake = document.createElement("div");
+    snowflake.classList.add("snowflake");
+    snowflake.style.left = Math.random() * window.innerWidth + "px";
+    snowflake.style.animationDuration = (3 + Math.random() * 5) + "s";
+    snowflake.style.color = colors[Math.floor(Math.random() * colors.length)];
+    snowflake.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+    document.body.appendChild(snowflake);
+
+    setTimeout(() => {
+      snowflake.remove();
+    }, 8000);
+  }
+
+  setInterval(createSnowflake, 300)
+</script>
+</body>
+</html>
