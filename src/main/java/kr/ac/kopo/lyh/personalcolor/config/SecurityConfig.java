@@ -44,7 +44,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false)
+//                        .maxSessionsPreventsLogin(false)
                 );
 
         return http.build();

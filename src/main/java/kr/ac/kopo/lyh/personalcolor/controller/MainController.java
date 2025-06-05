@@ -16,6 +16,11 @@ public class MainController {
         return "index";
     }
 
+//    @GetMapping("/upload")
+//    public String upload() {
+//        return "upload";
+//    }
+
     @GetMapping("/menu")
     public String menu() {
         return "redirect:/shop";

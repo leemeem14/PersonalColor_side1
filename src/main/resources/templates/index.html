@@ -224,12 +224,12 @@
   window.onload = updateUI;
 
   // 테스트용: 로그인 상태 토글 (실제 사용 시 제거)
-  function testLogin() {
-    sessionStorage.setItem('isLoggedIn', 'true');
-    sessionStorage.setItem('username', 'testuser');
-    updateUI();
-    console.log('테스트 로그인 완료');
-  }
+  // function testLogin() {
+  //   sessionStorage.setItem('isLoggedIn', 'true');
+  //   sessionStorage.setItem('username', 'testuser');
+  //   updateUI();
+  //   console.log('테스트 로그인 완료');
+  // }
 
   function testLogout() {
     sessionStorage.removeItem('isLoggedIn');
