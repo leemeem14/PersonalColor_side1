@@ -1,6 +1,6 @@
 package kr.ac.kopo.lyh.personalcolor.controller;
 
-import jakarta.annotation.Resource;
+import org.springframework.core.io.Resource;
 import kr.ac.kopo.lyh.personalcolor.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

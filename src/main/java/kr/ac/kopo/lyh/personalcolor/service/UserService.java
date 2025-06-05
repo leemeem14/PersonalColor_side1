@@ -1,6 +1,6 @@
 package kr.ac.kopo.lyh.personalcolor.service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import kr.ac.kopo.lyh.personalcolor.controller.dto.SignupForm;
 import kr.ac.kopo.lyh.personalcolor.entity.User;
 import kr.ac.kopo.lyh.personalcolor.repository.UserRepository;

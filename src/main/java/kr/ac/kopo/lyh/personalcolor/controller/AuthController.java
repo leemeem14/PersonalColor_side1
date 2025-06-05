@@ -1,17 +1,19 @@
 package kr.ac.kopo.lyh.personalcolor.controller;
 
-import ch.qos.logback.core.model.Model;
+import org.springframework.ui.Model;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import kr.ac.kopo.lyh.personalcolor.controller.dto.LoginRequest;
+import kr.ac.kopo.lyh.personalcolor.controller.dto.LoginResponse;
+import kr.ac.kopo.lyh.personalcolor.controller.dto.SignupForm;
+import kr.ac.kopo.lyh.personalcolor.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.User;
+import kr.ac.kopo.lyh.personalcolor.entity.User;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -55,6 +57,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request,
                                    HttpServletRequest httpRequest) {
         try {
+            // 기존 authenticate 메서드 사용 (이미 User 엔티티를 반환함)
             User user = userService.authenticate(request.getEmail(), request.getPassword());
 
             // 세션에 사용자 정보 저장

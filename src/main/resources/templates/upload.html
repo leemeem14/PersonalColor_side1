@@ -338,7 +338,8 @@
     <h2 class="upload-title">사진 업로드</h2>
 
     <!-- 업로드 이미지 영역 -->
-    <div id="uploadImage">
+<!--    업로드 이미지 다운로드 (중복 ID)-->
+    <div id="uploadImg1">
       <span>📸 사진을 업로드 해주세요</span>
     </div>
 
@@ -346,6 +347,7 @@
     <video id="video" autoplay playsinline></video>
 
     <!-- 업로드 폼 -->
+<!--모델이 cpu로 해서 post로 하면 오래 걸리니까 고쳐야 할 수 있음. (처리가 끝나면 db에 저장해서, push로 알림)  -->
     <form id="uploadForm" th:action="@{/upload}" method="post" enctype="multipart/form-data" style="display: none;">
       <input type="file" name="file" id="fileInput" accept="image/*">
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -368,7 +370,8 @@
 <div sec:authorize="!isAuthenticated()" class="container content-blurred">
   <div class="upload-section">
     <h2 class="upload-title">사진 업로드</h2>
-    <div id="uploadImage">
+<!-- 업로드 이미지 2 로 해서 (위 아래 ID구분)-->
+    <div id="uploadImg2">
       <span>📸 사진을 업로드 해주세요</span>
     </div>
     <div class="button-container">

@@ -17,11 +17,8 @@ public class ApplicationConfig {
         return factory.createMultipartConfig();
     }
 
-    @Bean
-    public CommonsMultipartResolver multipartResolver() {
-        CommonsMultipartResolver resolver = new CommonsMultipartResolver();
-        resolver.setMaxUploadSize(10485760); // 10MB
-        resolver.setDefaultEncoding("UTF-8");
-        return resolver;
-    }
+    // CommonsMultipartResolver 제거 - Spring Boot 기본 multipart 지원 사용
+    // application.properties에서 다음 설정으로 대체:
+    // spring.servlet.multipart.max-file-size=10MB
+    // spring.servlet.multipart.max-request-size=10MB
 }
