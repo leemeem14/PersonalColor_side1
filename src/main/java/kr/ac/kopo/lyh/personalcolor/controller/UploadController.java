@@ -1,22 +1,25 @@
 package kr.ac.kopo.lyh.personalcolor.controller;
 
-import org.springframework.ui.Model;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import kr.ac.kopo.lyh.personalcolor.entity.ColorAnalysis;
+import kr.ac.kopo.lyh.personalcolor.entity.User;
+import kr.ac.kopo.lyh.personalcolor.service.ColorAnalysisService;
 import kr.ac.kopo.lyh.personalcolor.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 @Controller
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ import java.util.Random;
 public class UploadController {
 
     private final FileStorageService fileStorageService;
+    private final ColorAnalysisService colorAnalysisService;
 
     @GetMapping("/upload")
     public String uploadForm() {
@@ -42,6 +46,8 @@ public class UploadController {
                         .body(Map.of("success", false, "error", "로그인이 필요합니다."));
             }
 
+            User user = (User) session.getAttribute("user");
+
             // 파일 검증
             if (file.isEmpty()) {
                 return ResponseEntity.badRequest()
@@ -56,21 +62,29 @@ public class UploadController {
             }
 
             // 파일 저장
-            String fileName = fileStorageService.storeFile(file);
+            String storedFileName = fileStorageService.storeFile(file);
 
-            // 세션에 업로드된 파일 정보 저장
-            session.setAttribute("uploadedFile", fileName);
+            // 이미지 분석 수행
+            ColorAnalysis analysis = colorAnalysisService.analyzeImage(
+                    user,
+                    file.getOriginalFilename(),
+                    storedFileName
+            );
+
+            // 세션에 분석 결과 ID 저장
+            session.setAttribute("latestAnalysisId", analysis.getId());
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "파일 업로드 성공",
-                    "fileName", fileName
+                    "message", "분석이 완료되었습니다!",
+                    "analysisId", analysis.getId(),
+                    "redirectUrl", "/results"
             ));
 
         } catch (Exception e) {
-            log.error("파일 업로드 중 오류 발생", e);
+            log.error("파일 업로드 및 분석 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("success", false, "error", "파일 업로드 중 오류가 발생했습니다."));
+                    .body(Map.of("success", false, "error", "분석 중 오류가 발생했습니다."));
         }
     }
 
@@ -81,28 +95,75 @@ public class UploadController {
             return "redirect:/login";
         }
 
-        // 업로드된 파일이 있는지 확인
-        String uploadedFile = (String) session.getAttribute("uploadedFile");
-        if (uploadedFile == null) {
+        User user = (User) session.getAttribute("user");
+        Long analysisId = (Long) session.getAttribute("latestAnalysisId");
+
+        ColorAnalysis analysis;
+        if (analysisId != null) {
+            // 특정 분석 결과 조회
+            analysis = colorAnalysisService.getUserAnalyses(user).stream()
+                    .filter(a -> a.getId().equals(analysisId))
+                    .findFirst()
+                    .orElse(null);
+        } else {
+            // 최근 분석 결과 조회
+            analysis = colorAnalysisService.getLatestAnalysis(user);
+        }
+
+        if (analysis == null) {
             return "redirect:/upload";
         }
 
-        // 임시로 랜덤 결과 생성 (나중에 실제 분석 결과로 대체)
-        String[] colorTypes = {"봄 웜톤", "여름 쿨톤", "가을 웜톤", "겨울 쿨톤"};
-        String[] descriptions = {
-                "따뜻하고 생기있는 색상이 잘 어울립니다!",
-                "시원하고 우아한 색상이 잘 어울립니다!",
-                "깊고 따뜻한 색상이 잘 어울립니다!",
-                "선명하고 차가운 색상이 잘 어울립니다!"
-        };
-
-        Random random = new Random();
-        int index = random.nextInt(colorTypes.length);
-
-        model.addAttribute("colorType", colorTypes[index]);
-        model.addAttribute("description", descriptions[index]);
-        model.addAttribute("uploadedFile", uploadedFile);
+        model.addAttribute("analysis", analysis);
+        model.addAttribute("colorType", analysis.getColorType().getDisplayName());
+        model.addAttribute("description", analysis.getDescription());
+        model.addAttribute("confidence", Math.round(analysis.getConfidence() * 100));
+        model.addAttribute("uploadedFile", analysis.getStoredFileName());
 
         return "results";
+    }
+
+    @GetMapping("/history")
+    public String history(HttpServletRequest request,
+                          @RequestParam(defaultValue = "0") int page,
+                          @RequestParam(defaultValue = "10") int size,
+                          Model model) {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            return "redirect:/login";
+        }
+
+        User user = (User) session.getAttribute("user");
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ColorAnalysis> analyses = colorAnalysisService.getUserAnalyses(user, pageable);
+
+        model.addAttribute("analyses", analyses);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", analyses.getTotalPages());
+        model.addAttribute("totalElements", analyses.getTotalElements());
+
+        return "history";
+    }
+
+    @DeleteMapping("/analysis/{id}")
+    @ResponseBody
+    public ResponseEntity<?> deleteAnalysis(@PathVariable Long id, HttpServletRequest request) {
+        try {
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("user") == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("success", false, "error", "로그인이 필요합니다."));
+            }
+
+            User user = (User) session.getAttribute("user");
+            colorAnalysisService.deleteAnalysis(id, user);
+
+            return ResponseEntity.ok(Map.of("success", true, "message", "분석 결과가 삭제되었습니다."));
+
+        } catch (Exception e) {
+            log.error("분석 결과 삭제 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "error", e.getMessage()));
+        }
     }
 }
