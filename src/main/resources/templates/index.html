@@ -141,20 +141,46 @@
 </div>
 
 <script>
-  // 로그인 상태 확인 함수
-  function isLoggedIn() {
-    // sessionStorage 사용 (서버에서 세션 관리할 때 권장)
-    return sessionStorage.getItem('isLoggedIn') === 'true';
+  // 서버 세션 상태 확인 함수
+  async function checkServerSession() {
+    try {
+      const response = await fetch('/api/session');
+      const data = await response.json();
+      return data.isLoggedIn;
+    } catch (error) {
+      console.error('세션 확인 중 오류:', error);
+      return false;
+    }
+  }
+
+  // 로그인 상태 확인 함수 (서버 세션 기준)
+  async function isLoggedIn() {
+    const serverSession = await checkServerSession();
+    const clientSession = sessionStorage.getItem('isLoggedIn') === 'true';
+
+    // 서버와 클라이언트 세션이 다른 경우 클라이언트를 서버에 맞춤
+    if (serverSession !== clientSession) {
+      if (serverSession) {
+        sessionStorage.setItem('isLoggedIn', 'true');
+      } else {
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('userEmail');
+      }
+    }
+
+    return serverSession;
   }
 
   // 페이지 로드 시 UI 업데이트
-  function updateUI() {
+  async function updateUI() {
     const loginLink = document.getElementById('loginLink');
     const signupLink = document.querySelector('a[href="/signup"]');
     const uploadLink = document.getElementById('uploadLink');
     const logoutLink = document.getElementById('logoutLink');
 
-    if (isLoggedIn()) {
+    const loggedIn = await isLoggedIn();
+
+    if (loggedIn) {
       // 로그인된 상태
       loginLink.style.display = 'none';
       logoutLink.style.display = 'block';
@@ -192,21 +218,24 @@
   }
 
   // 로그아웃 처리
-  function logout() {
-    // 서버에 로그아웃 요청을 보내는 것이 좋습니다
-    fetch('/logout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    }).then(response => {
+  async function logout() {
+    try {
+      const response = await fetch('/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
       if (response.ok) {
         sessionStorage.removeItem('isLoggedIn');
-        sessionStorage.removeItem('username');
-        updateUI();
+        sessionStorage.removeItem('userEmail');
+        await updateUI();
         alert('로그아웃되었습니다.');
       }
-    });
+    } catch (error) {
+      console.error('로그아웃 중 오류:', error);
+    }
   }
 
   // 로그아웃 링크 클릭 이벤트
@@ -222,14 +251,6 @@
 
   // 페이지 로드 시 UI 업데이트
   window.onload = updateUI;
-
-  // 테스트용: 로그인 상태 토글 (실제 사용 시 제거)
-  // function testLogin() {
-  //   sessionStorage.setItem('isLoggedIn', 'true');
-  //   sessionStorage.setItem('username', 'testuser');
-  //   updateUI();
-  //   console.log('테스트 로그인 완료');
-  // }
 
   function testLogout() {
     sessionStorage.removeItem('isLoggedIn');

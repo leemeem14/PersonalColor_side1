@@ -54,8 +54,8 @@ public class AuthController {
 
     @PostMapping("/api/login")
     @ResponseBody
-    public ResponseEntity<?> login(@RequestBody LoginRequest request,
-                                   HttpServletRequest httpRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request,
+                                               HttpServletRequest httpRequest) {
         try {
             // 기존 authenticate 메서드 사용 (이미 User 엔티티를 반환함)
             User user = userService.authenticate(request.getEmail(), request.getPassword());
@@ -65,10 +65,13 @@ public class AuthController {
             session.setAttribute("user", user);
             session.setAttribute("isLoggedIn", true);
 
+            // 세션 타임아웃 30분으로 설정
+            session.setMaxInactiveInterval(30 * 60);
+
             return ResponseEntity.ok(LoginResponse.builder()
                     .success(true)
                     .message("로그인 성공")
-                    .redirectUrl("/home")
+                    .redirectUrl("/")  // /home 대신 / 로 변경
                     .build());
 
         } catch (Exception e) {
