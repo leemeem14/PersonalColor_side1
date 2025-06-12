@@ -306,7 +306,7 @@
 
     const loggedIn = await isLoggedIn();
 
-    if (loggedIn) {
+    if (isLoggedIn() === 'true') {
       // 로그인된 상태
       loginLink.style.display = 'none';
       logoutLink.style.display = 'block';
