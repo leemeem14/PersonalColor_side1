@@ -29,10 +29,10 @@ public class UploadController {
     private final FileStorageService fileStorageService;
     private final ColorAnalysisService colorAnalysisService;
 
-    @GetMapping("/upload")
-    public String uploadForm() {
-        return "upload";
-    }
+//    @GetMapping("/upload")
+//    public String uploadForm() {
+//        return "upload";
+//    }
 
     @PostMapping("/upload")
     @ResponseBody

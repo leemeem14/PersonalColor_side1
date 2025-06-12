@@ -68,7 +68,7 @@ public class AuthController {
             return ResponseEntity.ok(LoginResponse.builder()
                     .success(true)
                     .message("로그인 성공")
-                    .redirectUrl("/")
+                    .redirectUrl("/home")
                     .build());
 
         } catch (Exception e) {
