@@ -109,7 +109,7 @@
   };
 
   // 로그인 폼 제출 처리
-  document.getElementById('loginForm').addEventListener('submit', async function (e) {
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
     const email = document.getElementById('email').value;
@@ -132,55 +132,40 @@
     }
 
     // 서버에 로그인 요청
-    //   fetch('/api/login', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       email: email,
-    //       password: password
-    //     })
-    //   })
-    //           .then(response => response.json())
-    //           .then(data => {
-    //             if (data.success) {
-    //               // 로그인 성공
-    //               sessionStorage.setItem('isLoggedIn', 'true');
-    //               sessionStorage.setItem('userEmail', email);
-    //
-    //               // 성공 메시지 표시 후 메인 페이지로 이동
-    //               loginBtn.textContent = '로그인 성공!';
-    //               setTimeout(function() {
-    //                 window.location.href = data.redirectUrl || '/';
-    //               }, 1000);
-    //             } else {
-    //               // 로그인 실패
-    //               showError(data.message);
-    //               resetLoginButton();
-    //             }
-    //           })
-    //           .catch(error => {
-    //             console.error('Error:', error);
-    //             showError('로그인 중 오류가 발생했습니다.');
-    //             resetLoginButton();
-    //           });
-    // });'
-    const res = await fetch("/api/login", {
-      method: "POST",
+    fetch('/api/login', {
+      method: 'POST',
       headers: {
-        "Authorization": `Basic ${credentials}`
-      }
-    });
-    if (res.ok) {
-      // 로그인 성공 시 main.html로 리다이렉트
-      window.location.href = "/main.html";
-    } else {
-      const text = await res.text();
-      document.getElementById("result").textContent = `로그인 실패: ${text}`;
-    }
-  });
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password
+      })
+    })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                // 로그인 성공
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('userEmail', email);
 
+                // 성공 메시지 표시 후 메인 페이지로 이동
+                loginBtn.textContent = '로그인 성공!';
+                setTimeout(function() {
+                  window.location.href = data.redirectUrl || '/';
+                }, 1000);
+              } else {
+                // 로그인 실패
+                showError(data.message);
+                resetLoginButton();
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              showError('로그인 중 오류가 발생했습니다.');
+              resetLoginButton();
+            });
+  });
 
   // 에러 메시지 표시
   function showError(message) {

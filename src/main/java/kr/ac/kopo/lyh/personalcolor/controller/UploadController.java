@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import kr.ac.kopo.lyh.personalcolor.entity.ColorAnalysis;
 import kr.ac.kopo.lyh.personalcolor.entity.User;
-import kr.ac.kopo.lyh.personalcolor.service.colorAnalysisService;
+import kr.ac.kopo.lyh.personalcolor.service.ColorAnalysisService;
 import kr.ac.kopo.lyh.personalcolor.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ import java.util.Map;
 public class UploadController {
 
     private final FileStorageService fileStorageService;
-    private final colorAnalysisService colorAnalysisService;
+    private final ColorAnalysisService colorAnalysisService;
 
 //    @GetMapping("/upload")
 //    public String uploadForm() {

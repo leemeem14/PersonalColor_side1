@@ -1,6 +1,5 @@
 package kr.ac.kopo.lyh.personalcolor.exception;
 
-import kr.ac.kopo.lyh.personalcolor.controller.dto.ApiError;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,22 +14,27 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.error("잘못된 요청: {}", e.getMessage());
+        return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "error", e.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleException(Exception e) {
-        log.error("Unexpected error occurred: ", e);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiError("An unexpected error occurred",
-                        "INTERNAL_SERVER_ERROR",
-                        500));
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleException(Exception e) {
+        log.error("서버 오류 발생", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("success", false, "error", "서버 내부 오류가 발생했습니다."));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<ApiError> handleMaxSizeException(MaxUploadSizeExceededException e) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError("File size exceeds maximum limit",
-                        "FILE_TOO_LARGE",
-                        400));
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        log.error("파일 크기 초과: {}", e.getMessage());
+        return ResponseEntity.badRequest()
+                .body(Map.of("success", false, "error", "파일 크기가 너무 큽니다. (최대 10MB)"));
     }
 }
