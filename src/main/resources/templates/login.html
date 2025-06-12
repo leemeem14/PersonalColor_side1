@@ -101,24 +101,49 @@
 </div>
 
 <script>
-  // 페이지 로드 시 서버 세션 확인
-  window.onload = async function() {
+  // 페이지 로드 시 세션 확인 (수정됨)
+  document.addEventListener('DOMContentLoaded', async function() {
+    // 서버 세션 먼저 확인
     try {
-      const response = await fetch('/api/session');
-      const data = await response.json();
+      const response = await fetch('/api/session', {
+        method: 'GET',
+        credentials: 'include'
+      });
 
-      if (data.isLoggedIn) {
-        // 서버에서 로그인 상태면 클라이언트도 동기화
-        sessionStorage.setItem('isLoggedIn', 'true');
-        sessionStorage.setItem('userEmail', data.userEmail);
-        window.location.href = '/';
+      if (response.ok) {
+        const data = await response.json();
+        if (data.isLoggedIn) {
+          // 이미 로그인되어 있으면 메인으로 리다이렉트
+          sessionStorage.setItem('isLoggedIn', 'true');
+          sessionStorage.setItem('userEmail', data.userEmail);
+          window.location.href = '/';
+          return;
+        }
       }
     } catch (error) {
-      console.error('세션 확인 중 오류:', error);
+      console.error('세션 확인 오류:', error);
     }
-  };
 
-  // 로그인 폼 제출 처리
+    // 클라이언트 세션도 확인
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    if (isLoggedIn) {
+      window.location.href = '/';
+    }
+  });
+
+  // 로그인 성공 후 처리 함수 (새로 추가됨)
+  function handleLoginSuccess(data) {
+    // sessionStorage에 로그인 정보 저장
+    sessionStorage.setItem('isLoggedIn', 'true');
+    if (data.userEmail) {
+      sessionStorage.setItem('userEmail', data.userEmail);
+    }
+    alert('로그인 성공!');
+    // 메인 페이지로 이동
+    window.location.href = '/';
+  }
+
+  // 로그인 폼 제출 처리 (수정됨)
   document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -147,6 +172,7 @@
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // 쿠키 포함 (추가됨)
       body: JSON.stringify({
         email: email,
         password: password
@@ -155,15 +181,11 @@
             .then(response => response.json())
             .then(data => {
               if (data.success) {
-                // 로그인 성공
-                sessionStorage.setItem('isLoggedIn', 'true');
-                sessionStorage.setItem('userEmail', email);
-
-                // 성공 메시지 표시 후 메인 페이지로 이동
-                loginBtn.textContent = '로그인 성공!';
-                setTimeout(function() {
-                  window.location.href = data.redirectUrl || '/';
-                }, 1000);
+                // 로그인 성공 처리 함수 호출 (수정됨)
+                handleLoginSuccess({
+                  userEmail: email,
+                  ...data
+                });
               } else {
                 // 로그인 실패
                 showError(data.message);
