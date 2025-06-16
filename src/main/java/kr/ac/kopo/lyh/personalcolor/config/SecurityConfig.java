@@ -22,20 +22,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/login", "/signup", "/api/login", "/static/**",
+                        .requestMatchers("/", "/login", "/signup", "/api/login", "/api/auth/**", "/static/**",
                                 "/images/**", "/files/**", "/shop").permitAll()
-                        .requestMatchers("/upload", "/results").authenticated()
+                        .requestMatchers("/upload", "/results", "/history", "/home").authenticated()
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
-                        .permitAll()
-                )
+                // Spring Security 기본 form login 비활성화
+                .formLogin(form -> form.disable())
+                .httpBasic(httpBasic -> httpBasic.disable())
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
                         .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
                 .csrf(csrf -> csrf
@@ -44,7 +43,19 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
-//                        .maxSessionsPreventsLogin(false)
+                        .maxSessionsPreventsLogin(false)
+                )
+                // 인증 실패 시 처리
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            String requestedWith = request.getHeader("X-Requested-With");
+                            if ("XMLHttpRequest".equals(requestedWith)) {
+                                response.setStatus(401);
+                                response.getWriter().write("{\"success\":false,\"error\":\"로그인이 필요합니다.\"}");
+                            } else {
+                                response.sendRedirect("/login");
+                            }
+                        })
                 );
 
         return http.build();
