@@ -94,10 +94,13 @@ public class SecurityConfig {
                 )
                 // 보안 헤더 설정
                 .headers(headers -> headers
-                        .httpStrictTransportSecurity(hsts -> hsts
+                        .frameOptions().deny()
+                        .contentTypeOptions().and()
+                        .httpStrictTransportSecurity(hstsConfig -> hstsConfig
                                 .maxAgeInSeconds(31536000)
-                                .includeSubDomains(true)  // 인자 없음!
+                                .includeSubdomains(true)
                         )
+                        .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
                 );
 
         return http.build();
