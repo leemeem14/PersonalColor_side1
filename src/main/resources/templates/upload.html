@@ -2,8 +2,6 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
-  <meta name="_csrf" th:content="${_csrf.token}"/>
-  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <title>사진 업로드</title>
   <style>
     .navbar {
@@ -41,28 +39,12 @@
       text-decoration: none;
       font-weight: 500;
       transition: opacity 0.2s;
-      cursor: pointer;
     }
 
     .nav-link:hover {
       opacity: 0.8;
     }
 
-    .logout-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-weight: 500;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      font-size: inherit;
-    }
-
-    .logout-btn:hover {
-      opacity: 0.8;
-    }
-
-    /* 기존 스타일들... */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
@@ -280,6 +262,20 @@
       background-color: #545b62;
     }
 
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      font-size: 20px;
+      animation: fall linear infinite;
+      z-index: 9999;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+      }
+    }
+
     /* 반응형 디자인 */
     @media (max-width: 480px) {
       .container {
@@ -315,7 +311,7 @@
 <body>
 <div class="navbar">
   <div class="nav-items">
-    <div class="hamburger" onclick="window.location.href='/'">☰</div>
+    <div class="hamburger" onclick="window.location.href='/'">&#9776;</div>
     <!-- Spring Security를 사용한 조건부 네비게이션 -->
     <div sec:authorize="!isAuthenticated()">
       <a class="nav-link" th:href="@{/login}">로그인</a>
@@ -323,8 +319,7 @@
     </div>
     <a class="nav-link" th:href="@{/upload}">사진 업로드</a>
     <div sec:authorize="isAuthenticated()">
-      <span class="nav-link" id="userEmail"></span>
-      <button class="logout-btn" onclick="performLogout()">로그아웃</button>
+      <a class="nav-link" th:href="@{/logout}">로그아웃</a>
     </div>
   </div>
 </div>
@@ -343,7 +338,8 @@
     <h2 class="upload-title">사진 업로드</h2>
 
     <!-- 업로드 이미지 영역 -->
-    <div id="uploadImage">
+<!--    업로드 이미지 다운로드 (중복 ID)-->
+    <div id="uploadImg1">
       <span>📸 사진을 업로드 해주세요</span>
     </div>
 
@@ -351,6 +347,7 @@
     <video id="video" autoplay playsinline></video>
 
     <!-- 업로드 폼 -->
+<!--모델이 cpu로 해서 post로 하면 오래 걸리니까 고쳐야 할 수 있음. (처리가 끝나면 db에 저장해서, push로 알림)  -->
     <form id="uploadForm" th:action="@{/upload}" method="post" enctype="multipart/form-data" style="display: none;">
       <input type="file" name="file" id="fileInput" accept="image/*">
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -373,7 +370,8 @@
 <div sec:authorize="!isAuthenticated()" class="container content-blurred">
   <div class="upload-section">
     <h2 class="upload-title">사진 업로드</h2>
-    <div id="uploadImage2">
+<!-- 업로드 이미지 2 로 해서 (위 아래 ID구분)-->
+    <div id="uploadImg2">
       <span>📸 사진을 업로드 해주세요</span>
     </div>
     <div class="button-container">
@@ -388,61 +386,8 @@
 
 <script>
   // CSRF 토큰 가져오기
-  const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
-  // 페이지 로드 시 사용자 정보 확인
-  window.onload = function() {
-    checkAuthenticationStatus();
-  };
-
-  /**
-   * 현재 인증 상태 확인
-   */
-  function checkAuthenticationStatus() {
-    fetch('/api/user/current')
-            .then(response => response.json())
-            .then(data => {
-              if (data.success && data.isAuthenticated) {
-                const userEmailElement = document.getElementById('userEmail');
-                if (userEmailElement) {
-                  userEmailElement.textContent = data.userEmail;
-                }
-              }
-            })
-            .catch(error => {
-              console.error('인증 상태 확인 실패:', error);
-            });
-  }
-
-  /**
-   * 로그아웃 처리 함수
-   */
-  function performLogout() {
-    if (confirm('로그아웃하시겠습니까?')) {
-      fetch('/api/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [csrfHeader]: csrfToken
-        }
-      })
-              .then(response => response.json())
-              .then(data => {
-                if (data.success) {
-                  alert('로그아웃되었습니다.');
-                  window.location.href = data.redirectUrl || '/';
-                } else {
-                  alert(data.message || '로그아웃 중 오류가 발생했습니다.');
-                }
-              })
-              .catch(error => {
-                console.error('로그아웃 실패:', error);
-                // 에러가 발생해도 Spring Security의 기본 로그아웃으로 처리
-                window.location.href = '/logout';
-              });
-    }
-  }
+  const csrfToken = /*[[${_csrf.token}]]*/ '';
+  const csrfHeader = /*[[${_csrf.headerName}]]*/ '';
 
   // 로그인 페이지로 이동
   function goToLogin() {
@@ -548,6 +493,26 @@
   function goToRandomResult() {
     window.location.href = '/results';
   }
+
+  // 눈송이 효과
+  const colors = ["#FFB6C1", "#FF69B4", "#87CEEB", "#8A2BE2", "#7FFFD4", "#FFD700", "#FFA07A"];
+  const symbols = ["❄", "♥", "✿", "★"];
+
+  function createSnowflake() {
+    const snowflake = document.createElement("div");
+    snowflake.classList.add("snowflake");
+    snowflake.style.left = Math.random() * window.innerWidth + "px";
+    snowflake.style.animationDuration = (3 + Math.random() * 5) + "s";
+    snowflake.style.color = colors[Math.floor(Math.random() * colors.length)];
+    snowflake.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+    document.body.appendChild(snowflake);
+
+    setTimeout(() => {
+      snowflake.remove();
+    }, 8000);
+  }
+
+  setInterval(createSnowflake, 300);
 </script>
 </body>
 </html>

@@ -1,10 +1,9 @@
+<!--아이디,비번-->
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="_csrf" th:content="${_csrf.token}"/>
-  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <title>로그인</title>
   <style>
     body {
@@ -14,7 +13,6 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
     }
     .login-box {
       background: white;
@@ -22,68 +20,42 @@
       border-radius: 10px;
       width: 300px;
       text-align: center;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
     }
-
-    .login-title {
-      font-size: 28px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 30px;
-    }
-
     input {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       margin: 8px 0;
       box-sizing: border-box;
       border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s;
+      border-radius: 4px;
     }
-
-    input:focus {
-      outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 5px rgba(0,123,255,0.3);
-    }
-
     button {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       margin-top: 10px;
       cursor: pointer;
       position: relative;
       border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 500;
-      transition: all 0.3s ease;
+      border-radius: 4px;
     }
-
     .login-btn {
       background-color: black;
       color: white;
     }
-
-    .login-btn:hover:not(.loading) {
-      background-color: #333;
-      transform: translateY(-2px);
+    .login-btn:hover {
+      background-color: white;
+      border: 2px solid black;
+      color: black;
     }
-
     .signup-btn {
       background-color: rgb(255, 255, 255);
       border: 2px solid black;
       color: black;
     }
-
     .signup-btn:hover {
       background-color: black;
-      color: white;
-      transform: translateY(-2px);
+      color: white
     }
-
     button::after {
       content: attr(data-tooltip);
       position: absolute;
@@ -99,292 +71,120 @@
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.3s;
-      pointer-events: none;
     }
-
     button:hover::after {
       opacity: 1;
       visibility: visible;
     }
-
     .error-message {
-      color: #dc3545;
-      margin-top: 15px;
+      color: red;
+      margin-top: 10px;
       font-size: 14px;
       display: none;
-      padding: 10px;
-      background-color: #f8d7da;
-      border: 1px solid #f5c6cb;
-      border-radius: 5px;
-      text-align: center;
     }
-
-    .success-message {
-      color: #155724;
-      margin-top: 15px;
-      font-size: 14px;
-      display: none;
-      padding: 10px;
-      background-color: #d4edda;
-      border: 1px solid #c3e6cb;
-      border-radius: 5px;
-      text-align: center;
-    }
-
     .loading {
       opacity: 0.6;
       pointer-events: none;
-      position: relative;
-    }
-
-    .loading::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 16px;
-      height: 16px;
-      border: 2px solid transparent;
-      border-top: 2px solid white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: translate(-50%, -50%) rotate(0deg); }
-      100% { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-      text-align: left;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      color: #333;
-      font-weight: 500;
-    }
-
-    .footer-text {
-      margin-top: 20px;
-      font-size: 14px;
-      color: #666;
-    }
-
-    .footer-text a {
-      color: #007bff;
-      text-decoration: none;
-    }
-
-    .footer-text a:hover {
-      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 <div class="login-box">
-  <h2 class="login-title">로그인</h2>
+  <h2>로그인</h2>
   <form id="loginForm">
-    <div class="form-group">
-      <label for="email">이메일</label>
-      <input type="email" id="email" placeholder="이메일을 입력하세요" required />
-    </div>
-    <div class="form-group">
-      <label for="password">비밀번호</label>
-      <input type="password" id="password" placeholder="비밀번호를 입력하세요" required />
-    </div>
+    <input type="email" id="email" placeholder="이메일" required />
+    <input type="password" id="password" placeholder="비밀번호" required />
     <button type="submit" class="login-btn" data-tooltip="돌아오신걸 환영합니다">로그인</button>
     <button type="button" class="signup-btn" onclick="location.href='/signup'" data-tooltip="처음이신가요?">회원가입</button>
   </form>
   <div id="errorMessage" class="error-message"></div>
-  <div id="successMessage" class="success-message"></div>
-
-  <div class="footer-text">
-    <a href="/">메인으로 돌아가기</a>
-  </div>
 </div>
 
 <script>
-  // CSRF 토큰 가져오기
-  const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
   // 페이지 로드 시 이미 로그인되어 있다면 메인 페이지로 리다이렉트
   window.onload = function() {
-    checkAuthenticationStatus();
-
-    // URL 파라미터 확인
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('error') === 'true') {
-      showError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
-    }
-    if (urlParams.get('expired') === 'true') {
-      showError('세션이 만료되었습니다. 다시 로그인해주세요.');
-    }
-    if (urlParams.get('logout') === 'true') {
-      showSuccess('로그아웃되었습니다.');
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+      window.location.href = '/';
     }
   };
-
-  /**
-   * 현재 인증 상태 확인
-   */
-  function checkAuthenticationStatus() {
-    fetch('/api/user/current')
-            .then(response => response.json())
-            .then(data => {
-              if (data.success && data.isAuthenticated) {
-                window.location.href = '/upload';
-              }
-            })
-            .catch(error => {
-              console.error('인증 상태 확인 실패:', error);
-            });
-  }
 
   // 로그인 폼 제출 처리
   document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
-    const email = document.getElementById('email').value.trim();
+    const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const errorMessage = document.getElementById('errorMessage');
-    const successMessage = document.getElementById('successMessage');
     const loginBtn = document.querySelector('.login-btn');
 
-    // 메시지 초기화
-    hideMessages();
-
-    // 유효성 검사
-    if (!email || !password) {
-      showError('이메일과 비밀번호를 모두 입력해주세요.');
-      return;
-    }
-
-    if (!isValidEmail(email)) {
-      showError('올바른 이메일 형식을 입력해주세요.');
-      return;
-    }
+    // 에러 메시지 초기화
+    errorMessage.style.display = 'none';
 
     // 로딩 상태 표시
-    setLoadingState(true);
+    loginBtn.classList.add('loading');
+    loginBtn.textContent = '로그인 중...';
+
+    // 간단한 유효성 검사
+    if (!email || !password) {
+      showError('이메일과 비밀번호를 모두 입력해주세요.');
+      resetLoginButton();
+      return;
+    }
 
     // 서버에 로그인 요청
     fetch('/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        [csrfHeader]: csrfToken
       },
       body: JSON.stringify({
         email: email,
         password: password
       })
     })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('서버 응답 오류');
-              }
-              return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
               if (data.success) {
                 // 로그인 성공
-                showSuccess('로그인 성공! 잠시 후 이동합니다...');
+                sessionStorage.setItem('isLoggedIn', 'true');
+                sessionStorage.setItem('userEmail', email);
 
+                // 성공 메시지 표시 후 메인 페이지로 이동
+                loginBtn.textContent = '로그인 성공!';
                 setTimeout(function() {
-                  window.location.href = data.redirectUrl || '/upload';
-                }, 1500);
+                  window.location.href = data.redirectUrl || '/';
+                }, 1000);
               } else {
                 // 로그인 실패
-                showError(data.message || '로그인에 실패했습니다.');
-                setLoadingState(false);
+                showError(data.message);
+                resetLoginButton();
               }
             })
             .catch(error => {
-              console.error('로그인 요청 실패:', error);
-              showError('로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-              setLoadingState(false);
+              console.error('Error:', error);
+              showError('로그인 중 오류가 발생했습니다.');
+              resetLoginButton();
             });
   });
 
-  /**
-   * 에러 메시지 표시
-   */
+  // 에러 메시지 표시
   function showError(message) {
     const errorMessage = document.getElementById('errorMessage');
     errorMessage.textContent = message;
     errorMessage.style.display = 'block';
-
-    // 5초 후 자동으로 숨김
-    setTimeout(() => {
-      errorMessage.style.display = 'none';
-    }, 5000);
   }
 
-  /**
-   * 성공 메시지 표시
-   */
-  function showSuccess(message) {
-    const successMessage = document.getElementById('successMessage');
-    successMessage.textContent = message;
-    successMessage.style.display = 'block';
-  }
-
-  /**
-   * 메시지 숨김
-   */
-  function hideMessages() {
-    document.getElementById('errorMessage').style.display = 'none';
-    document.getElementById('successMessage').style.display = 'none';
-  }
-
-  /**
-   * 로딩 상태 설정
-   */
-  function setLoadingState(isLoading) {
+  // 로그인 버튼 상태 초기화
+  function resetLoginButton() {
     const loginBtn = document.querySelector('.login-btn');
-    const form = document.getElementById('loginForm');
-
-    if (isLoading) {
-      loginBtn.classList.add('loading');
-      loginBtn.textContent = '로그인 중...';
-      form.style.pointerEvents = 'none';
-    } else {
-      loginBtn.classList.remove('loading');
-      loginBtn.textContent = '로그인';
-      form.style.pointerEvents = 'auto';
-    }
-  }
-
-  /**
-   * 이메일 유효성 검사
-   */
-  function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    loginBtn.classList.remove('loading');
+    loginBtn.textContent = '로그인';
   }
 
   // Enter 키 처리
   document.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
-      const activeElement = document.activeElement;
-      if (activeElement.tagName === 'INPUT') {
-        document.getElementById('loginForm').dispatchEvent(new Event('submit'));
-      }
-    }
-  });
-
-  // 입력 필드 실시간 유효성 검사
-  document.getElementById('email').addEventListener('blur', function() {
-    const email = this.value.trim();
-    if (email && !isValidEmail(email)) {
-      this.style.borderColor = '#dc3545';
-    } else {
-      this.style.borderColor = '#ddd';
+      document.getElementById('loginForm').dispatchEvent(new Event('submit'));
     }
   });
 </script>
