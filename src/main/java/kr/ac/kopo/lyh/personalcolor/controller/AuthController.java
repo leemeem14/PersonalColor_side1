@@ -11,14 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import kr.ac.kopo.lyh.personalcolor.entity.User;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collections;
 
 @Controller
 @RequiredArgsConstructor
@@ -62,33 +57,21 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request,
                                    HttpServletRequest httpRequest) {
         try {
-            // 사용자 인증
+            // 기존 authenticate 메서드 사용 (이미 User 엔티티를 반환함)
             User user = userService.authenticate(request.getEmail(), request.getPassword());
 
-            // Spring Security 인증 토큰 생성
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(user.getEmail(), null, Collections.emptyList());
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-
-            // 세션에 Spring Security 컨텍스트 저장
+            // 세션에 사용자 정보 저장
             HttpSession session = httpRequest.getSession();
-            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-                    SecurityContextHolder.getContext());
-
-            // 추가 사용자 정보 세션에 저장
             session.setAttribute("user", user);
             session.setAttribute("isLoggedIn", true);
-
-            log.info("사용자 로그인 성공: {}", user.getEmail());
 
             return ResponseEntity.ok(LoginResponse.builder()
                     .success(true)
                     .message("로그인 성공")
-                    .redirectUrl("/upload") // 로그인 후 바로 업로드 페이지로 이동
+                    .redirectUrl("/home")
                     .build());
 
         } catch (Exception e) {
-            log.error("로그인 실패", e);
             return ResponseEntity.ok(LoginResponse.builder()
                     .success(false)
                     .message("이메일 또는 비밀번호가 올바르지 않습니다.")
@@ -103,8 +86,6 @@ public class AuthController {
         if (session != null) {
             session.invalidate();
         }
-        SecurityContextHolder.clearContext();
-        log.info("사용자 로그아웃");
         return ResponseEntity.ok().build();
     }
 }
