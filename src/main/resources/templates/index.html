@@ -7,7 +7,7 @@
     body {
       margin: 0;
       font-family: sans-serif;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      background-image:url("/images/mainpage.png");
     }
 
     .navbar {
@@ -46,11 +46,46 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
+    }
+
+    .main-content-text {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #222;
+      /* 필요시 추가 스타일 */
     }
 
     .main-content img {
       width: 250px; /* 필요에 따라 조정 가능 */
       border-radius: 20px;
+    }
+
+    .season-img {
+      position: absolute;
+      width: 150px;  /* 필요시 크기 조정 */
+      border-radius: 20px;
+    }
+
+    .img-topleft {
+      top: 10px;
+      left: 10px;
+    }
+
+    .img-topright {
+      top: 10px;
+      right: 10px;
+    }
+
+    .img-bottomleft {
+      bottom: 10px;
+      left: 10px;
+    }
+
+    .img-bottomright {
+      bottom: 10px;
+      right: 10px;
     }
 
     /* 모달 스타일 */
@@ -125,7 +160,18 @@
 </div>
 
 <div class="main-content">
-
+  <!-- 왼쪽 위 -->
+  <img src="/images/ws.png" alt="Warm Spring" class="season-img img-topleft">
+  <!-- 오른쪽 위 -->
+  <img src="/images/cs.png" alt="Cool Summer" class="season-img img-topright">
+  <!-- 왼쪽 아래 -->
+  <img src="/images/wa.png" alt="Warm Autumn" class="season-img img-bottomleft">
+  <!-- 오른쪽 아래 -->
+  <img src="/images/cw.png" alt="Cool Winter" class="season-img img-bottomright">
+  <!-- 중앙 글씨 -->
+  <div class="main-content-text">
+    당신에게 맞는 옷 색깔을 찾아볼까요?
+  </div>
 </div>
 
 <!-- 로그인 필요 모달 -->

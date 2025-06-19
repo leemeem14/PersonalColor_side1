@@ -117,7 +117,33 @@
     }
     // 로그인되어 있으면 아무 동작 안함
   }
+  function logout() {
+    // 서버에 로그아웃 요청을 보내는 것이 좋습니다
+    fetch('/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }).then(response => {
+      if (response.ok) {
+        sessionStorage.removeItem('isLoggedIn');
+        sessionStorage.removeItem('username');
+        updateUI();
+        alert('로그아웃되었습니다.');
+      }
+    });
+  }
 
+  // 로그아웃 링크 클릭 이벤트
+  document.getElementById('logoutLink').onclick = logout;
+
+  // 모달 바깥 클릭 시 닫기
+  window.onclick = function(event) {
+    const modal = document.getElementById('loginModal');
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
   // 눈송이 효과
   const colors = ["#FFB6C1", "#FF69B4", "#87CEEB", "#8A2BE2", "#7FFFD4", "#FFD700", "#FFA07A"];
   const symbols = ["❄", "♥", "✿", "★"];
