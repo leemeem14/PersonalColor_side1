@@ -105,15 +105,17 @@ public class AuthController {
         SecurityContextHolder.clearContext();
         return "redirect:/"; // 홈으로 리디렉션
 
-    @PostMapping("/logout")
-    @ResponseBody
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        SecurityContextHolder.clearContext();
-        log.info("사용자 로그아웃");
-        return ResponseEntity.ok().build();
+//    @PostMapping("/logout")
+//    @ResponseBody
+//    public ResponseEntity<?> logout(HttpServletRequest request) {
+//        HttpSession session = request.getSession(false);
+//        if (session != null) {
+//            session.invalidate();
+//        }
+//        SecurityContextHolder.clearContext();
+//        log.info("사용자 로그아웃");
+//        return ResponseEntity.ok().build();
+//    }
+
     }
 }

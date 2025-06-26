@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>분석 결과</title>
+</head>
+<body>
+  <h1>퍼스널 컬러 분석 결과</h1>
+  <!--/*@thymesVar id="uploadedFile" type=""*/-->
+  <img th:if="${uploadedFile}" th:src="@{/uploads/{file}(file=${uploadedFile})}" style="max-width:300px;">
+  <p><strong>예측 결과:</strong> <!--/*@thymesVar id="colorType" type=""*/-->
+  <span th:text="${colorType}"></span></p>
+  <p><strong>설명:</strong> <!--/*@thymesVar id="description" type=""*/-->
+  <span th:text="${description}"></span></p>
+  <p><strong>신뢰도:</strong> <!--/*@thymesVar id="confidence" type=""*/-->
+  <span th:text="${confidence}"></span>%</p>
+  <a href="/">다시 분석하기</a>
+</body>
+</html>

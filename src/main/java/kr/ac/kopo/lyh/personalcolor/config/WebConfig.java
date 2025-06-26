@@ -25,7 +25,6 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler("/favicon.ico")
                 .addResourceLocations("classpath:/static/");
-
     }
 
     @Override
@@ -33,4 +32,3 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addViewController("/").setViewName("index");
     }
 }
-

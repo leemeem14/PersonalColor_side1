@@ -11,7 +11,7 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background-image:url("/images/mainpage.png");
+      background : linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
       margin: 0;
       flex-direction: column;
     }
@@ -85,11 +85,11 @@
     const loadingDiv = document.getElementById('loading');
 
     resultDiv.innerHTML = '<p><strong>예측 결과:</strong> -</p><p><strong>톤:</strong> -</p><p><strong>어울리는 색상:</strong> -</p>';
-    loadingDiv.style.display = 'block'; // 로딩 메시지 표시
+    loadingDiv.style.display = 'block';
 
     if (imageInput.files.length === 0) {
       alert('사진을 선택해주세요.');
-      loadingDiv.style.display = 'none'; // 로딩 메시지 숨김
+      loadingDiv.style.display = 'none';
       return;
     }
 
@@ -98,33 +98,29 @@
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://localhost:5000/predict', {
+      // Spring Boot 서버로 전송 (포트/주소는 환경에 맞게 수정)
+      const response = await fetch('192.168.26.163', {
         method: 'POST',
         body: formData
       });
 
       const data = await response.json();
 
-      if (response.ok) {
-        resultDiv.innerHTML = `
-                        <p><strong>예측 결과:</strong> ${data.season}</p>
-                        <p><strong>톤:</strong> ${data.tone}</p>
-                        <p><strong>어울리는 색상:</strong> ${data.description} (${data.colors.join(', ')})</p>
-                    `;
+      if (response.ok && data.success) {
+        // 분석 결과 페이지로 이동
+        window.location.href = data.redirectUrl;
       } else {
         alert(`오류: ${data.error || '알 수 없는 오류'}`);
         resultDiv.innerHTML = '<p><strong>예측 결과:</strong> 오류 발생</p>';
       }
     } catch (error) {
       console.error('Fetch error:', error);
-      alert('서버와 통신 중 오류가 발생했습니다. Flask 서버가 실행 중인지 확인해주세요.');
+      alert('서버와 통신 중 오류가 발생했습니다.');
       resultDiv.innerHTML = '<p><strong>예측 결과:</strong> 통신 오류</p>';
     } finally {
-      loadingDiv.style.display = 'none'; // 로딩 메시지 숨김
+      loadingDiv.style.display = 'none';
     }
   }
-
-
 </script>
 </body>
 </html>
