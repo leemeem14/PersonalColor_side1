@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>메인 페이지</title>
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <style>
     body {
       margin: 0;
@@ -249,6 +251,7 @@
       if (response.ok) {
         sessionStorage.removeItem('isLoggedIn');
         sessionStorage.removeItem('username');
+
         updateUI();
         alert('로그아웃되었습니다.');
       }

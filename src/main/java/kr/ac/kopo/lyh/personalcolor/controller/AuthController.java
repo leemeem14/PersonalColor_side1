@@ -84,7 +84,7 @@ public class AuthController {
             return ResponseEntity.ok(LoginResponse.builder()
                     .success(true)
                     .message("로그인 성공")
-                    .redirectUrl("/upload") // 로그인 후 바로 업로드 페이지로 이동
+                    .redirectUrl("/") // 로그인 후 바로 업로드 페이지로 이동
                     .build());
 
         } catch (Exception e) {
@@ -94,7 +94,16 @@ public class AuthController {
                     .message("이메일 또는 비밀번호가 올바르지 않습니다.")
                     .build());
         }
+
     }
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        SecurityContextHolder.clearContext();
+        return "redirect:/"; // 홈으로 리디렉션
 
     @PostMapping("/logout")
     @ResponseBody
